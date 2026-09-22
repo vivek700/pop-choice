@@ -1,10 +1,58 @@
-import { ai } from '$lib/server/config';
-import type { PageServerLoad } from './$types';
+import { fail } from '@sveltejs/kit';
+import type { Actions } from './$types';
+import {
+	buildSearchQuery,
+	embedQuery,
+	findMatches,
+	movieRecommendation
+} from '$lib/server/recommend';
 
-export const load: PageServerLoad = async () => {
-	// const interation = await ai.interactions.create({
-	// 	model: 'gemini-3.5-flash-lite',
-	// 	input: 'explain how ai works in a few words.'
-	// });
-	// console.log(interation.output_text);
-};
+export const actions = {
+	default: async ({ request }) => {
+		const fdata = await request.formData();
+
+		const ques1 = fdata.get('ques-1'),
+			ques2 = fdata.get('ques-2'),
+			ques3 = fdata.get('ques-3');
+
+		if (
+			typeof ques1 !== 'string' ||
+			!ques1.trim() ||
+			typeof ques2 !== 'string' ||
+			!ques2.trim() ||
+			typeof ques3 !== 'string' ||
+			!ques3.trim()
+		) {
+			return fail(400, { message: 'Please answer all three questions.' });
+		}
+
+		try {
+			const query = (await buildSearchQuery(ques1, ques2, ques3)) as string;
+			console.log(query);
+
+			const embedding = await embedQuery(query);
+
+			console.log(embedding);
+
+			if (!embedding) {
+				return fail(500, {
+					message: 'Failed to generate embeddings.'
+				});
+			}
+
+			const movies = await findMatches(embedding);
+
+			const recommendation = await movieRecommendation(movies[0], query);
+
+			console.log(recommendation);
+
+			return {
+				success: true,
+				movie: recommendation
+			};
+		} catch (error) {
+			console.error(error);
+			return fail(500, { message: "It's us not you. Something went wrong." });
+		}
+	}
+} satisfies Actions;
