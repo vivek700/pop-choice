@@ -13,7 +13,6 @@
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
 		"seed": "node --env-file=.env scripts/seed-embeddings.ts"
-
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
@@ -38,6 +37,7 @@
 	},
 	"dependencies": {
 		"@google/genai": "^2.23.0",
-		"@supabase/supabase-js": "^2.116.0"
+		"@supabase/supabase-js": "^2.116.0",
+		"zod": "^4.6.5"
 	}
 }

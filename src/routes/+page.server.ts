@@ -28,11 +28,8 @@ export const actions = {
 
 		try {
 			const query = (await buildSearchQuery(ques1, ques2, ques3)) as string;
-			console.log(query);
 
 			const embedding = await embedQuery(query);
-
-			console.log(embedding);
 
 			if (!embedding) {
 				return fail(500, {
@@ -42,13 +39,11 @@ export const actions = {
 
 			const movies = await findMatches(embedding);
 
-			const recommendation = await movieRecommendation(movies[0], query);
-
-			console.log(recommendation);
+			const movie = await movieRecommendation(movies[0], query);
 
 			return {
 				success: true,
-				movie: recommendation
+				movie
 			};
 		} catch (error) {
 			console.error(error);
